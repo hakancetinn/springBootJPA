@@ -1,11 +1,16 @@
 package com.example.springbootjpa;
 
+import com.github.javafaker.Faker;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 @SpringBootApplication
 public class SpringbootjpaApplication {
@@ -17,45 +22,43 @@ public class SpringbootjpaApplication {
     @Bean
     CommandLineRunner commandLineRunner(StudentRepository studentRepository) {
         return args -> {
-            Student maria = new Student(
-                    "Maria",
-                    "Jones",
-                    "maria.jones@gmail.com",
-                    21
-            );
+            generateRandomStudents(studentRepository);
+//            sorting(studentRepository);
 
-            Student maria2 = new Student(
-                    "Maria",
-                    "Jones",
-                    "maria2.jones@gmail.com",
-                    25
-            );
+            PageRequest pageRequest = PageRequest.of(
+                    0,
+                    5,
+                    Sort.by("firstName").ascending());
 
-            Student ahmed = new Student(
-                    "Ahmed",
-                    "Ali",
-                    "ahmed.ali@gmail.com",
-                    18
-            );
-
-            studentRepository.saveAll(List.of(maria, maria2, ahmed));
-
-            studentRepository
-                    .findStudentByEmail("ahmed.ali@gmail.com")
-                    .ifPresentOrElse(
-                            System.out::println,
-                            () -> System.out.println("Student with email ahmed.ali@gmail.com not found"));
-
-            studentRepository
-                    .selectStudentWhereFirstNameAndAgeGreaterThanOrEqual("Maria", 21)
-                    .forEach(System.out::println);
-
-            studentRepository
-                    .selectStudentWhereFirstNameAndAgeGreaterThanOrEqualNative("Maria", 21)
-                    .forEach(System.out::println);
-
-            System.out.println("Deleting Maria 2");
-            System.out.println(studentRepository.deleteStudentById(3L));
+            Page<Student> page = studentRepository.findAll(pageRequest);
+            page.get().forEach(System.out::println);
         };
+    }
+
+    private void sorting(StudentRepository studentRepository) {
+        Sort sort = Sort.by("firstName").ascending()
+                .and(Sort.by("age").descending());
+
+//        studentRepository.findAll(sort)
+//                .forEach(System.out::println);
+
+        studentRepository.findAll(sort)
+                .forEach(student -> System.out.println(student.getFirstName() + " " + student.getAge()));
+    }
+
+    private void generateRandomStudents(StudentRepository studentRepository) {
+        Faker faker = new Faker();
+        for (int i = 0; i < 20; i++) {
+            String firstName = faker.name().firstName();
+            String lastName = faker.name().lastName();
+            String email = String.format("%s.%s@gmail.com", firstName, lastName);
+
+            Student student = new Student(
+                    firstName,
+                    lastName,
+                    email,
+                    faker.number().numberBetween(17,55));
+            studentRepository.save(student);
+        }
     }
 }
