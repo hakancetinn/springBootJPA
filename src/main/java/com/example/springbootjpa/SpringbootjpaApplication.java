@@ -20,18 +20,35 @@ public class SpringbootjpaApplication {
     }
 
     @Bean
-    CommandLineRunner commandLineRunner(StudentRepository studentRepository) {
+    CommandLineRunner commandLineRunner(StudentRepository studentRepository,
+                                        StudentIdCardRepository studentIdCardRepository) {
         return args -> {
-            generateRandomStudents(studentRepository);
-//            sorting(studentRepository);
+            Faker faker = new Faker();
 
-            PageRequest pageRequest = PageRequest.of(
-                    0,
-                    5,
-                    Sort.by("firstName").ascending());
+            String firstName = faker.name().firstName();
+            String lastName = faker.name().lastName();
+            String email = String.format("%s.%s@gmail.com", firstName, lastName);
 
-            Page<Student> page = studentRepository.findAll(pageRequest);
-            page.get().forEach(System.out::println);
+            Student student = new Student(
+                    firstName,
+                    lastName,
+                    email,
+                    faker.number().numberBetween(17, 55));
+
+            StudentIdCard studentIdCard = new StudentIdCard(
+                    "123456789",
+                    student
+            );
+
+            studentIdCardRepository.save(studentIdCard);
+
+            studentRepository.findById(1L)
+                    .ifPresent(System.out::println);
+
+            studentIdCardRepository.findById(1L)
+                    .ifPresent(System.out::println);
+
+            studentRepository.deleteById(1L);
         };
     }
 
