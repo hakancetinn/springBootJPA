@@ -52,6 +52,13 @@ public class SpringbootjpaApplication {
             );
 
             student.setStudentIdCard(studentIdCard);
+
+            student.enrolToCourse(
+                    new Course("Computer Science", "IT"));
+
+            student.enrolToCourse(
+                    new Course("Spring Data JPA", "IT"));
+
             studentRepository.save(student);
 
             studentRepository.findById(1L)
