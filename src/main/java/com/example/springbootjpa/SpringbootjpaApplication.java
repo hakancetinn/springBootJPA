@@ -53,11 +53,26 @@ public class SpringbootjpaApplication {
 
             student.setStudentIdCard(studentIdCard);
 
-            student.enrolToCourse(
-                    new Course("Computer Science", "IT"));
+            student.addEnrolment(new Enrolment(
+                    new EnrolmentId(1L, 2L),
+                    student,
+                    new Course("Computer Science", "IT"),
+                    LocalDateTime.now()
+            ));
 
-            student.enrolToCourse(
-                    new Course("Spring Data JPA", "IT"));
+            student.addEnrolment(new Enrolment(
+                    new EnrolmentId(1L, 1L),
+                    student,
+                    new Course("Spring Data JPA", "IT"),
+                    LocalDateTime.now().minusDays(18)
+            ));
+
+            student.addEnrolment(new Enrolment(
+                    new EnrolmentId(1L, 1L),
+                    student,
+                    new Course("Spring Data JPA", "IT"),
+                    LocalDateTime.now().minusDays(18)
+            ));
 
             studentRepository.save(student);
 
@@ -65,6 +80,7 @@ public class SpringbootjpaApplication {
                     .ifPresent(s -> {
                         System.out.println("fetch book lazy...");
                         List<Book> books = student.getBooks();
+                        List<Enrolment> enrolments = student.getEnrolments();
                         books.forEach(book -> {
                             System.out.println(s.getFirstName() + " borrowed " + book.getBookName());
                         });
